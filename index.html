@@ -4,185 +4,587 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NEXUS | Admin Control Center</title>
+<title>NEXUS | Cyber Control Center</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#030807;color:#eafff5;font-family:Arial}
-header{padding:20px;background:#071b13;border-bottom:1px solid #00ff9d;display:flex;justify-content:space-between;align-items:center}
-.logo{color:#00ff9d;font-size:25px;font-weight:bold;letter-spacing:4px}
-main{padding:25px;max-width:1200px;margin:auto}
-h2,h3{color:#00ff9d}
-nav{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
-button{background:#063c2c;color:#00ff9d;border:1px solid #00a76b;padding:11px 16px;border-radius:5px;cursor:pointer}
-button:hover{background:#00a76b;color:#00150d}
-input,select,textarea{width:100%;padding:12px;margin:7px 0;background:#06100d;color:white;border:1px solid #245443;border-radius:5px}
-.panel{background:#091712;border:1px solid #12513c;padding:20px;border-radius:10px;margin:15px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:15px}
-.stat{background:#0c201a;padding:20px;border:1px solid #12513c;border-radius:9px}
-.stat strong{font-size:25px;color:#00ff9d}
+:root{--green:#00ff9d;--cyan:#00d9ff;--bg:#030807;--panel:#091712}
+body{margin:0;background:var(--bg);color:#eafff5;font-family:Arial,sans-serif;overflow-x:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%;z-index:-2;pointer-events:none}
+body:before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at 50% 20%,#06432c55,transparent 65%);z-index:-1;pointer-events:none}
+*{scrollbar-color:#087c58 #06100d}
+header{height:70px;position:fixed;top:0;left:0;right:0;background:#030b08ed;border-bottom:1px solid #087c58;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:20;backdrop-filter:blur(15px)}
+.logo{font-size:23px;letter-spacing:5px;font-weight:bold;color:var(--green);text-shadow:0 0 20px var(--green)}
+.status{color:var(--green);font-size:12px}
+.layout{display:flex;padding-top:70px;min-height:100vh}
+.sidebar{width:245px;position:fixed;top:70px;bottom:0;left:0;background:#06120d;border-right:1px solid #12513c;padding:20px 12px;overflow-y:auto;z-index:10}
+.side-title{font-size:10px;color:#648f7b;letter-spacing:3px;padding:15px 12px 8px}
+.navbtn{width:100%;display:flex;align-items:center;gap:12px;background:transparent;border:1px solid transparent;color:#a9cabc;padding:14px 13px;text-align:left;margin:3px 0;border-radius:7px;font-size:13px}
+.navbtn:hover,.navbtn.active{background:#0b2c1e;border-color:#087c58;color:var(--green);box-shadow:inset 3px 0 var(--green)}
+.main{margin-left:245px;width:calc(100% - 245px);padding:28px;max-width:1600px}
+h1{font-size:25px;letter-spacing:2px;color:var(--green)}
+h2,h3{color:var(--green)}
+.muted{color:#789b8b;font-size:13px}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:16px;margin:20px 0}
+.stat{background:linear-gradient(145deg,#0d291c,#07110d);border:1px solid #14553c;padding:20px;border-radius:10px;position:relative;overflow:hidden}
+.stat:after{content:"";position:absolute;width:100px;height:100px;border:1px solid #00ff9d22;border-radius:50%;right:-35px;top:-35px;box-shadow:0 0 35px #00ff9d22}
+.stat label{font-size:11px;color:#86ad99;letter-spacing:2px}
+.stat strong{display:block;font-size:29px;color:var(--green);margin-top:12px;text-shadow:0 0 15px #00ff9d55}
+.panel{background:#091712ed;border:1px solid #12513c;padding:22px;border-radius:10px;margin:18px 0;box-shadow:0 8px 35px #0005}
+.panel h2{margin-top:0;font-size:19px}
+button{cursor:pointer;background:#063c2c;color:var(--green);border:1px solid #00a76b;padding:11px 15px;border-radius:5px;font-weight:bold}
+button:hover{background:#00a76b;color:#00150d;box-shadow:0 0 15px #00ff9d55}
+input,select,textarea{width:100%;padding:12px;margin:7px 0;background:#06100d;color:white;border:1px solid #245443;border-radius:5px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--green);box-shadow:0 0 10px #00ff9d22}
+textarea{min-height:100px;resize:vertical}
+label{font-size:12px;color:#9bc6ae}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tablewrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;min-width:650px}
-td,th{padding:12px;border-bottom:1px solid #164431;text-align:left}
-.tablewrap{overflow:auto}
-.small{color:#91b1a2;font-size:12px}
-img.proof{max-width:130px;display:block}
-.hidden{display:none}
+th,td{padding:13px;text-align:left;border-bottom:1px solid #17432f;font-size:13px}
+th{color:var(--green);font-size:11px;letter-spacing:1px}
+.badge{display:inline-block;padding:5px 9px;border-radius:4px;font-size:10px;background:#163e2b;color:var(--green)}
+.pending{background:#493714;color:#ffce65}
+.rejected{background:#481c20;color:#ff7777}
+.approved{background:#123e2b;color:#00ff9d}
+.hidden{display:none!important}
+.section{display:none}
+.section.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.chart{height:170px;display:flex;align-items:end;gap:8px;padding:20px 5px;border-bottom:1px solid #176044}
+.bar{flex:1;min-width:5px;background:linear-gradient(to top,#008b53,#00ff9d);border-radius:5px 5px 0 0;position:relative;min-height:3px;box-shadow:0 0 10px #00ff9d33}
+.bar span{position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);font-size:10px;color:#85a999}
+.proof{max-width:170px;max-height:140px;border:1px solid #00ff9d;border-radius:5px;object-fit:contain}
+.action{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.danger{border-color:#b63c3c;color:#ff7777;background:#301114}
+.editor{font-family:Consolas,monospace;min-height:350px;font-size:13px;line-height:1.6;color:#aaffcc}
+iframe{width:100%;height:430px;border:1px solid #126044;background:white;border-radius:7px}
+.mobile-menu{display:none}
+.earth{width:105px;height:105px;margin:20px auto;border:2px solid var(--green);border-radius:50%;box-shadow:0 0 30px #00ff9d55,inset 0 0 30px #00ff9d33;position:relative;animation:spin 12s linear infinite}
+.earth:before,.earth:after{content:"";position:absolute;inset:15px -7px;border:1px solid var(--cyan);border-radius:50%;transform:rotate(45deg)}
+.earth:after{transform:rotate(-45deg)}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{text-align:center;color:#547968;padding:30px;font-size:11px}
+@media(max-width:850px){
+.sidebar{width:220px;transform:translateX(-100%);transition:.3s}
+.sidebar.open{transform:translateX(0)}
+.main{margin-left:0;width:100%;padding:18px}
+.mobile-menu{display:block}
+header{padding:0 15px}
+}
+@media(max-width:550px){
+.row{grid-template-columns:1fr}
+.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.stat{padding:13px}
+.stat strong{font-size:20px}
+.panel{padding:14px}
+}
 </style>
 </head>
 <body>
+
+<canvas id="matrix"></canvas>
+
 <header>
-<div class="logo">NEXUS ADMIN</div>
-<span>CONTROL CENTER</span>
+<div style="display:flex;align-items:center;gap:15px">
+<button class="mobile-menu" onclick="toggleMenu()">☰</button>
+<div class="logo">NEXUS</div>
+</div>
+<div class="status">● SYSTEM ONLINE</div>
 </header>
-<main>
-<h2>ADMIN DASHBOARD</h2>
-<div class="grid">
-<div class="stat">Products<br><strong id="totalProducts">0</strong></div>
-<div class="stat">Orders<br><strong id="totalOrders">0</strong></div>
-<div class="stat">Sales<br><strong id="totalSales">0</strong></div>
-<div class="stat">Visitors<br><strong id="visitors">0</strong></div>
+
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+<div class="earth"></div>
+<div class="side-title">MAIN CONTROL</div>
+<button class="navbtn active" data-page="dashboard">◈ DASHBOARD</button>
+<button class="navbtn" data-page="products">▣ PRODUCTS</button>
+<button class="navbtn" data-page="orders">▤ ORDERS</button>
+<button class="navbtn" data-page="payments">◉ PAYMENT VERIFICATION</button>
+
+<div class="side-title">WEBSITE CONTROL</div>
+<button class="navbtn" data-page="analytics">⌁ VISITOR ANALYTICS</button>
+<button class="navbtn" data-page="editor">⌘ HTML EDITOR</button>
+<button class="navbtn" data-page="settings">⚙ PAYMENT SETTINGS</button>
+<button class="navbtn" data-page="site">◎ WEBSITE SETTINGS</button>
+
+<div class="side-title">SYSTEM</div>
+<button class="navbtn" onclick="refresh()">↻ REFRESH DATA</button>
+<a href="index.html" target="_blank" style="text-decoration:none"><button class="navbtn">↗ OPEN WEBSITE</button></a>
+<div class="small muted" style="padding:15px">NEXUS CYBER CONTROL CENTER<br>VERSION 2.0</div>
+</aside>
+
+<main class="main">
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="section active">
+<div class="topline">
+<div><h1>CYBER DASHBOARD</h1><p class="muted">Welcome to NEXUS Control Center</p></div>
+<span class="badge">LIVE MONITORING</span>
 </div>
 
-<nav>
-<button onclick="show('dashboard')">Dashboard</button>
-<button onclick="show('products')">Products</button>
-<button onclick="show('orders')">Orders</button>
-<button onclick="show('payments')">Payments</button>
-<button onclick="show('settings')">Payment Settings</button>
-<button onclick="show('editor')">Website Editor</button>
-</nav>
+<div class="grid">
+<div class="stat"><label>TOTAL PRODUCTS</label><strong id="totalProducts">0</strong></div>
+<div class="stat"><label>TOTAL ORDERS</label><strong id="totalOrders">0</strong></div>
+<div class="stat"><label>TOTAL SALES</label><strong id="totalSales">0</strong></div>
+<div class="stat"><label>TOTAL VISITORS</label><strong id="visitors">0</strong></div>
+<div class="stat"><label>PENDING PAYMENTS</label><strong id="pending">0</strong></div>
+<div class="stat"><label>DAILY REVENUE</label><strong id="dailyRevenue">0</strong></div>
+</div>
 
-<section id="dashboard" class="panel">
-<h2>Overview</h2>
-<p id="dailyRevenue">Daily Revenue: 0</p>
-<p class="small">Approved payments are counted as sales.</p>
+<div class="panel">
+<h2>◈ SYSTEM ACTIVITY</h2>
+<div class="grid">
+<div><span class="muted">SYSTEM STATUS</span><h3>ONLINE</h3></div>
+<div><span class="muted">STORE STATUS</span><h3 id="storeStatus">ACTIVE</h3></div>
+<div><span class="muted">DATABASE</span><h3>LOCAL STORAGE</h3></div>
+</div>
+</div>
+
+<div class="panel">
+<h2>⌁ REVENUE MONITOR</h2>
+<p class="muted">Approved revenue for the last seven days</p>
+<div class="chart" id="revenueChart"></div>
+</div>
+
+<div class="panel">
+<h2>◉ RECENT PAYMENTS</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>CUSTOMER</th><th>PRODUCT</th><th>AMOUNT</th><th>STATUS</th></tr></thead>
+<tbody id="recentPayments"></tbody>
+</table></div>
+</div>
 </section>
 
-<section id="products" class="panel hidden">
-<h2>Product Manager</h2>
+<!-- PRODUCTS -->
+<section id="products" class="section">
+<h1>PRODUCT MANAGEMENT</h1>
+<div class="panel">
+<h2>ADD / EDIT PRODUCT</h2>
 <input id="pid" type="hidden">
-<input id="pname" placeholder="Product Name">
-<textarea id="pdesc" placeholder="Product Description"></textarea>
-<select id="ptype"><option>Free</option><option>Paid</option></select>
-<input id="pprice" type="number" placeholder="Price">
-<input id="pcurrency" value="PKR" placeholder="Currency">
-<input id="plink" placeholder="Download URL">
+<label>Product Name</label><input id="pname" placeholder="Enter product name">
+<label>Description</label><textarea id="pdesc" placeholder="Product description"></textarea>
+<div class="row">
+<div><label>Product Type</label><select id="ptype"><option>Free</option><option>Paid</option></select></div>
+<div><label>Price</label><input id="pprice" type="number" min="0" placeholder="Price"></div>
+</div>
+<div class="row">
+<div><label>Currency</label><input id="pcurrency" value="PKR"></div>
+<div><label>Download Link</label><input id="plink" placeholder="https://..."></div>
+</div>
+<div class="action">
 <button onclick="saveProduct()">SAVE PRODUCT</button>
-<button onclick="clearProduct()">CLEAR</button>
-<h3>All Products</h3>
+<button onclick="clearProduct()">CLEAR FORM</button>
+</div>
+</div>
+<div class="panel">
+<h2>ALL PRODUCTS</h2>
 <div class="tablewrap"><table>
-<thead><tr><th>Name</th><th>Type</th><th>Price</th><th>Actions</th></tr></thead>
+<thead><tr><th>NAME</th><th>TYPE</th><th>PRICE</th><th>ACTIONS</th></tr></thead>
 <tbody id="productRows"></tbody>
 </table></div>
+</div>
 </section>
 
-<section id="orders" class="panel hidden">
-<h2>Orders</h2>
+<!-- ORDERS -->
+<section id="orders" class="section">
+<h1>ORDER MANAGEMENT</h1>
+<div class="panel">
 <div class="tablewrap"><table>
-<thead><tr><th>ID</th><th>Customer</th><th>Product</th><th>Amount</th><th>Status</th></tr></thead>
+<thead><tr><th>ORDER ID</th><th>CUSTOMER</th><th>PRODUCT</th><th>AMOUNT</th><th>STATUS</th></tr></thead>
 <tbody id="orderRows"></tbody>
 </table></div>
+</div>
 </section>
 
-<section id="payments" class="panel hidden">
-<h2>Payment Verification</h2>
+<!-- PAYMENTS -->
+<section id="payments" class="section">
+<h1>PAYMENT VERIFICATION</h1>
+<p class="muted">Review customer payment information and screenshots.</p>
 <div id="paymentRows"></div>
 </section>
 
-<section id="settings" class="panel hidden">
-<h2>Payment Details</h2>
-<input id="jazz" placeholder="JazzCash Number">
-<input id="easy" placeholder="Easypaisa Number">
-<input id="raast" placeholder="Raast ID">
-<input id="bank" placeholder="Bank Account Details">
-<input id="iban" placeholder="IBAN">
-<input id="upi" placeholder="India UPI ID">
-<button onclick="saveMethods()">SAVE PAYMENT SETTINGS</button>
+<!-- ANALYTICS -->
+<section id="analytics" class="section">
+<h1>VISITOR ANALYTICS</h1>
+<div class="grid">
+<div class="stat"><label>TOTAL VISITORS</label><strong id="analyticsVisitors">0</strong></div>
+<div class="stat"><label>RECORDED VISIT DAYS</label><strong id="visitDays">0</strong></div>
+</div>
+<div class="panel">
+<h2>VISITOR HISTORY</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>DATE</th><th>VISITORS</th></tr></thead>
+<tbody id="visitRows"></tbody>
+</table></div>
+<p class="muted">Visitor data is counted by the connected website in this browser's shared storage. It is not a global analytics service.</p>
+</div>
 </section>
 
-<section id="editor" class="panel hidden">
-<h2>Website Content Editor</h2>
-<input id="headline" placeholder="Website Heading">
-<textarea id="announcement" placeholder="Website Description"></textarea>
-<button onclick="saveSite()">SAVE WEBSITE CONTENT</button>
+<!-- HTML EDITOR -->
+<section id="editor" class="section">
+<h1>WEBSITE HTML EDITOR</h1>
+<div class="panel">
+<h2>WEBSITE SOURCE EDITOR</h2>
+<p class="muted">Edit and save the website HTML source for the connected website.</p>
+<label>Website HTML</label>
+<textarea id="htmlEditor" class="editor" spellcheck="false" placeholder="Paste your website HTML here..."></textarea>
+<div class="action">
+<button onclick="previewHTML()">PREVIEW HTML</button>
+<button onclick="saveHTML()">SAVE HTML</button>
+<button onclick="downloadHTML()">DOWNLOAD HTML</button>
+<button onclick="loadHTML()">LOAD SAVED HTML</button>
+</div>
+</div>
+<div class="panel">
+<h2>LIVE PREVIEW</h2>
+<iframe id="preview" sandbox="allow-scripts allow-forms"></iframe>
+</div>
+<p class="muted">Note: Saving HTML stores the edited source in shared LocalStorage. It does not automatically overwrite the GitHub Pages index.html file.</p>
 </section>
+
+<!-- PAYMENT SETTINGS -->
+<section id="settings" class="section">
+<h1>PAYMENT SETTINGS</h1>
+<div class="panel">
+<h2>PAYMENT METHODS</h2>
+<label>JazzCash</label><input id="jazz" placeholder="JazzCash Number">
+<label>Easypaisa</label><input id="easy" placeholder="Easypaisa Number">
+<label>Raast</label><input id="raast" placeholder="Raast ID">
+<label>Bank Account</label><input id="bank" placeholder="Bank Details">
+<label>IBAN</label><input id="iban" placeholder="IBAN">
+<label>India UPI</label><input id="upi" placeholder="UPI ID">
+<button onclick="saveMethods()">SAVE PAYMENT SETTINGS</button>
+</div>
+</section>
+
+<!-- WEBSITE SETTINGS -->
+<section id="site" class="section">
+<h1>WEBSITE SETTINGS</h1>
+<div class="panel">
+<h2>WEBSITE CONTENT</h2>
+<label>Website Heading</label>
+<input id="headline" placeholder="NEXUS CYBER">
+<label>Website Description</label>
+<textarea id="announcement" placeholder="Website description"></textarea>
+<label>Website URL</label>
+<input id="websiteURL" placeholder="https://username.github.io/repository/">
+<button onclick="saveSite()">SAVE WEBSITE SETTINGS</button>
+<button onclick="openSite()">OPEN WEBSITE</button>
+</div>
+<div class="panel">
+<h2>WEBSITE CONNECTION</h2>
+<p class="muted">Storage Key: nexus_control_v1</p>
+<p class="muted">Products, Orders, Payments, Methods, Site and Visits.</p>
+<span class="badge">SHARED STORAGE FORMAT</span>
+</div>
+</section>
+
+<footer>NEXUS CYBER CONTROL CENTER © 2026</footer>
 </main>
+</div>
+
 <script>
+// MATRIX BACKGROUND
+const canvas=document.getElementById('matrix');
+const ctx=canvas.getContext('2d');
+let drops=[];
+function resize(){
+ canvas.width=innerWidth;canvas.height=innerHeight;
+ drops=Array(Math.ceil(canvas.width/17)).fill(1);
+}
+window.addEventListener('resize',resize);resize();
+function animate(){
+ ctx.fillStyle='rgba(3,8,7,.13)';
+ ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.fillStyle='#00ff9d';
+ ctx.font='14px monospace';
+ drops.forEach((y,i)=>{
+ ctx.fillText(Math.random()>.5?'1':'0',i*17,y*17);
+ if(y*17>canvas.height&&Math.random()>.975)drops[i]=0;
+ drops[i]++;
+ });
+ requestAnimationFrame(animate);
+}
+animate();
+
+// ORIGINAL NEXUS DATABASE KEY - PRESERVED
 const KEY='nexus_control_v1';
 const blank=()=>({products:[],orders:[],payments:[],methods:{},site:{},visits:0});
+
 function read(){
- try{return {...blank(),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){return blank()}
+ try{return {...blank(),...JSON.parse(localStorage.getItem(KEY)||'{}')}}
+ catch(e){return blank()}
 }
 let db=read();
+const $=id=>document.getElementById(id);
+
 function write(){
+ try{
  localStorage.setItem(KEY,JSON.stringify(db));
  render();
+ }catch(e){
+ alert('Storage full. Please use a smaller payment screenshot.');
+ }
 }
-function show(id){
- document.querySelectorAll('main section').forEach(x=>x.classList.add('hidden'));
- document.getElementById(id).classList.remove('hidden');
-}
+
 function esc(s){
- return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ return String(s??'').replace(/[&<>"']/g,c=>({
+ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+ }[c]));
 }
+
+// NAVIGATION
+function show(id){
+ document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+ $(id).classList.add('active');
+ document.querySelectorAll('.navbtn[data-page]').forEach(x=>{
+ x.classList.toggle('active',x.dataset.page===id);
+ });
+ $('sidebar').classList.remove('open');
+ if(id==='editor')loadHTML();
+}
+document.querySelectorAll('.navbtn[data-page]').forEach(b=>{
+ b.addEventListener('click',()=>show(b.dataset.page));
+});
+function toggleMenu(){$('sidebar').classList.toggle('open')}
+function refresh(){db=read();render();alert('Dashboard refreshed')}
+
+// PRODUCTS
 function clearProduct(){
- ['pid','pname','pdesc','pprice','plink'].forEach(id=>document.getElementById(id).value='');
- document.getElementById('ptype').value='Free';
+ ['pid','pname','pdesc','pprice','plink'].forEach(id=>$(id).value='');
+ $('ptype').value='Free';
+ $('pcurrency').value='PKR';
 }
 function saveProduct(){
- let name=pname.value.trim();
+ db=read();
+ let name=$('pname').value.trim();
  if(!name)return alert('Enter product name');
- let id=pid.value||('P-'+Date.now());
- let p={id,name,desc:pdesc.value,type:ptype.value,price:ptype.value==='Free'?0:Number(pprice.value),currency:pcurrency.value||'PKR',link:plink.value.trim()};
- if(p.type==='Paid'&&(!Number.isFinite(p.price)||p.price<=0))return alert('Enter valid price');
+ let type=$('ptype').value;
+ let price=type==='Free'?0:Number($('pprice').value);
+ if(type==='Paid'&&(!Number.isFinite(price)||price<=0))
+ return alert('Enter valid price');
+ let id=$('pid').value||'P-'+Date.now();
+ let p={
+ id,name,desc:$('pdesc').value,type,price,
+ currency:$('pcurrency').value||'PKR',
+ link:$('plink').value.trim()
+ };
  let i=db.products.findIndex(x=>String(x.id)===String(id));
- if(i>=0)db.products[i]=p;else db.products.push(p);
- write();clearProduct();alert('Product saved');
+ if(i>=0)db.products[i]=p;
+ else db.products.push(p);
+ write();clearProduct();alert('Product saved successfully');
 }
 function editProduct(id){
- let p=db.products.find(x=>String(x.id)===String(id));if(!p)return;
- pid.value=p.id;pname.value=p.name;pdesc.value=p.desc||'';
- ptype.value=p.type;pprice.value=p.price;pcurrency.value=p.currency||'PKR';plink.value=p.link||'';
+ db=read();
+ let p=db.products.find(x=>String(x.id)===String(id));
+ if(!p)return;
+ $('pid').value=p.id;
+ $('pname').value=p.name;
+ $('pdesc').value=p.desc||'';
+ $('ptype').value=p.type;
+ $('pprice').value=p.price;
+ $('pcurrency').value=p.currency||'PKR';
+ $('plink').value=p.link||'';
  show('products');
 }
 function deleteProduct(id){
  if(!confirm('Delete this product?'))return;
- db.products=db.products.filter(x=>String(x.id)!==String(id));write();
-}
-function saveMethods(){
- db.methods={jazz:jazz.value,easy:easy.value,raast:raast.value,bank:bank.value,iban:iban.value,upi:upi.value};
- write();alert('Payment settings saved');
-}
-function saveSite(){
- db.site={...db.site,headline:headline.value,announcement:announcement.value};
- write();alert('Website content saved');
-}
-function approve(id){
- let p=db.payments.find(x=>x.id===id);if(!p)return;
- p.status='Approved';
- db.orders.unshift({...p,id:'ORD-'+Date.now(),status:'Approved'});
+ db=read();
+ db.products=db.products.filter(x=>String(x.id)!==String(id));
  write();
 }
-function reject(id){
- let p=db.payments.find(x=>x.id===id);if(!p)return;
- p.status='Rejected';write();
+
+// PAYMENT METHODS
+function saveMethods(){
+ db=read();
+ db.methods={
+ jazz:$('jazz').value,
+ easy:$('easy').value,
+ raast:$('raast').value,
+ bank:$('bank').value,
+ iban:$('iban').value,
+ upi:$('upi').value
+ };
+ write();alert('Payment settings saved');
 }
+
+// WEBSITE SETTINGS
+function saveSite(){
+ db=read();
+ db.site={
+ ...db.site,
+ headline:$('headline').value,
+ announcement:$('announcement').value,
+ url:$('websiteURL').value
+ };
+ write();alert('Website settings saved');
+}
+function openSite(){
+ let url=$('websiteURL').value.trim();
+ if(!url)return alert('Enter website URL');
+ try{
+ let u=new URL(url);
+ if(!['http:','https:'].includes(u.protocol))throw Error();
+ window.open(u.href,'_blank','noopener');
+ }catch(e){alert('Enter a valid website URL')}
+}
+
+// PAYMENT APPROVAL
+function approve(id){
+ db=read();
+ let p=db.payments.find(x=>x.id===id);
+ if(!p||p.status!=='Pending')return;
+ if(!confirm('Approve this payment?'))return;
+ p.status='Approved';
+ db.orders=db.orders||[];
+ if(!db.orders.some(o=>o.paymentId===id)){
+ db.orders.unshift({...p,id:'ORD-'+Date.now(),paymentId:id,status:'Approved'});
+ }
+ write();
+ alert('Payment approved');
+}
+function reject(id){
+ db=read();
+ let p=db.payments.find(x=>x.id===id);
+ if(!p||p.status!=='Pending')return;
+ if(!confirm('Reject this payment?'))return;
+ p.status='Rejected';
+ write();
+ alert('Payment rejected');
+}
+
+// HTML EDITOR
+function loadHTML(){
+ db=read();
+ $('htmlEditor').value=db.site?.customHTML||'';
+}
+function saveHTML(){
+ db=read();
+ db.site={...db.site,customHTML:$('htmlEditor').value};
+ write();
+ alert('HTML saved in browser storage.');
+}
+function previewHTML(){
+ $('preview').srcdoc=$('htmlEditor').value;
+}
+function downloadHTML(){
+ let code=$('htmlEditor').value;
+ if(!code.trim())return alert('HTML editor is empty');
+ let blob=new Blob([code],{type:'text/html'});
+ let a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='index.html';
+ a.click();
+ URL.revokeObjectURL(a.href);
+}
+
+// REVENUE
+function getRevenue(date){
+ return db.payments.filter(p=>
+ p.status==='Approved'&&(p.date||'').slice(0,10)===date
+ ).reduce((s,p)=>s+Number(p.amount||0),0);
+}
+function chart(){
+ let dates=[];
+ for(let i=6;i>=0;i--){
+ let d=new Date();
+ d.setDate(d.getDate()-i);
+ dates.push(d.toISOString().slice(0,10));
+ }
+ let values=dates.map(getRevenue);
+ let max=Math.max(...values,1);
+ $('revenueChart').innerHTML=values.map((v,i)=>
+ `<div class="bar" style="height:${Math.max(3,v/max*130)}px" title="${v}">
+ <span>${dates[i].slice(5)}</span></div>`
+ ).join('');
+}
+
+// RENDER ALL
 function render(){
  db=read();
- totalProducts.textContent=db.products.length;
- totalOrders.textContent=db.orders.length;
- visitors.textContent=db.visits||0;
- totalSales.textContent=db.payments.filter(x=>x.status==='Approved').reduce((s,x)=>s+Number(x.amount||0),0).toLocaleString();
+ $('totalProducts').textContent=db.products.length;
+ $('totalOrders').textContent=db.orders.length;
+ $('visitors').textContent=db.visits||0;
+ $('analyticsVisitors').textContent=db.visits||0;
+ $('pending').textContent=db.payments.filter(p=>p.status==='Pending').length;
+
+ let sales=db.payments.filter(p=>p.status==='Approved')
+ .reduce((s,p)=>s+Number(p.amount||0),0);
+ $('totalSales').textContent=sales.toLocaleString();
+
  let today=new Date().toISOString().slice(0,10);
- dailyRevenue.textContent='Daily Revenue: '+db.payments.filter(x=>x.status==='Approved'&&(x.date||'').slice(0,10)===today).reduce((s,x)=>s+Number(x.amount||0),0);
- productRows.innerHTML=db.products.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.type)}</td><td>${esc(p.price)} ${esc(p.currency)}</td><td><button onclick="editProduct('${esc(p.id)}')">EDIT</button> <button onclick="deleteProduct('${esc(p.id)}')">DELETE</button></td></tr>`).join('');
- orderRows.innerHTML=db.orders.map(o=>`<tr><td>${esc(o.id)}</td><td>${esc(o.customer)}</td><td>${esc(o.product)}</td><td>${esc(o.amount)}</td><td>${esc(o.status)}</td></tr>`).join('');
- paymentRows.innerHTML=db.payments.map(p=>`<div class="panel"><b>${esc(p.product)}</b><p>${esc(p.customer)} — ${esc(p.contact||'')}</p><p>${esc(p.amount)} | ${esc(p.method)} | ${esc(p.txn||'')}</p><p>Status: ${esc(p.status)}</p>${p.proof?`<img class="proof" src="${p.proof}" alt="Payment proof">`:''}${p.status==='Pending'?`<button onclick="approve('${esc(p.id)}')">APPROVE</button> <button onclick="reject('${esc(p.id)}')">REJECT</button>`:''}</div>`).join('')||'No payments yet.';
+ $('dailyRevenue').textContent=getRevenue(today).toLocaleString();
+
+ $('productRows').innerHTML=db.products.map(p=>`
+ <tr>
+ <td>${esc(p.name)}</td><td>${esc(p.type)}</td>
+ <td>${esc(p.price)} ${esc(p.currency)}</td>
+ <td><button onclick="editProduct('${esc(p.id)}')">EDIT</button>
+ <button class="danger" onclick="deleteProduct('${esc(p.id)}')">DELETE</button></td>
+ </tr>`).join('')||'<tr><td colspan="4">No products found.</td></tr>';
+
+ $('orderRows').innerHTML=db.orders.map(o=>`
+ <tr><td>${esc(o.id)}</td><td>${esc(o.customer)}</td>
+ <td>${esc(o.product)}</td><td>${esc(o.amount)} ${esc(o.currency)}</td>
+ <td><span class="badge">${esc(o.status)}</span></td></tr>
+ `).join('')||'<tr><td colspan="5">No orders yet.</td></tr>';
+
+ $('paymentRows').innerHTML=db.payments.map(p=>`
+ <div class="panel">
+ <h3>${esc(p.product)}</h3>
+ <p>Customer: ${esc(p.customer)}</p>
+ <p>Email: ${esc(p.contact||'')}</p>
+ <p>Amount: ${esc(p.amount)} ${esc(p.currency)}</p>
+ <p>Method: ${esc(p.method)}</p>
+ <p>Transaction: ${esc(p.txn||'')}</p>
+ <p>Status: <span class="badge ${p.status==='Pending'?'pending':p.status==='Rejected'?'rejected':'approved'}">${esc(p.status)}</span></p>
+ ${p.proof?`<a href="${p.proof}" target="_blank" rel="noopener"><img class="proof" src="${p.proof}" alt="Payment screenshot"></a>`:'No screenshot'}
+ ${p.status==='Pending'?`<div class="action">
+ <button onclick="approve('${esc(p.id)}')">APPROVE PAYMENT</button>
+ <button class="danger" onclick="reject('${esc(p.id)}')">REJECT PAYMENT</button>
+ </div>`:''}
+ <p class="muted">${esc(p.date||'')}</p>
+ </div>`).join('')||'<div class="panel">No payments submitted.</div>';
+
+ $('recentPayments').innerHTML=db.payments.slice(0,7).map(p=>`
+ <tr><td>${esc(p.customer)}</td><td>${esc(p.product)}</td>
+ <td>${esc(p.amount)} ${esc(p.currency)}</td><td>${esc(p.status)}</td></tr>
+ `).join('')||'<tr><td colspan="4">No recent payments.</td></tr>';
+
+ // Visitor history, if recorded by website
+ let history=db.visitHistory||{};
+ let entries=Object.entries(history).sort((a,b)=>b[0].localeCompare(a[0]));
+ $('visitDays').textContent=entries.length;
+ $('visitRows').innerHTML=entries.map(([date,count])=>
+ `<tr><td>${esc(date)}</td><td>${Number(count)||0}</td></tr>`
+ ).join('')||'<tr><td colspan="2">No daily visitor history recorded yet.</td></tr>';
+
  let m=db.methods||{};
- jazz.value=m.jazz||'';easy.value=m.easy||'';raast.value=m.raast||'';bank.value=m.bank||'';iban.value=m.iban||'';upi.value=m.upi||'';
- headline.value=db.site?.headline||'';announcement.value=db.site?.announcement||'';
+ $('jazz').value=m.jazz||'';
+ $('easy').value=m.easy||'';
+ $('raast').value=m.raast||'';
+ $('bank').value=m.bank||'';
+ $('iban').value=m.iban||'';
+ $('upi').value=m.upi||'';
+
+ let s=db.site||{};
+ $('headline').value=s.headline||'';
+ $('announcement').value=s.announcement||'';
+ $('websiteURL').value=s.url||'';
+
+ chart();
 }
-window.addEventListener('storage',e=>{if(e.key===KEY)render()});
+
+// CROSS-TAB UPDATES
+window.addEventListener('storage',e=>{
+ if(e.key===KEY)render();
+});
+
+// AUTO REFRESH
 render();
+setInterval(render,3000);
 </script>
 </body>
 </html>
