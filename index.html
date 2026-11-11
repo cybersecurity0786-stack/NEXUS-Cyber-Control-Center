@@ -1,0 +1,623 @@
+
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS Cyber Control Center</title>
+<style>
+:root{--bg:#05090b;--panel:#0a1417;--line:#16343a;--green:#35ff9a;--cyan:#36d9ff;--red:#ff476f;--muted:#83a4a5;--text:#e8fffa}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% -20%,#123c35,transparent 45%),#05090b;color:var(--text);font:14px Segoe UI,Arial,sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+.side{background:#061013;border-right:1px solid var(--line);padding:22px 15px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{font-weight:900;letter-spacing:2px;color:var(--green);font-size:19px;text-shadow:0 0 15px #35ff9a88}
+.brand small{display:block;font-size:9px;color:var(--muted);letter-spacing:4px}
+.status{border:1px solid #1d5948;background:#092019;padding:10px;border-radius:9px;margin:22px 0;color:var(--green);font-size:11px}
+.nav-label{color:#537477;font-size:10px;letter-spacing:2px;margin:20px 10px 8px}
+.nav button{width:100%;text-align:left;background:transparent;border:1px solid transparent;color:#9bb9b8;padding:11px 12px;border-radius:8px;margin:3px 0}
+.nav button:hover,.nav button.active{background:linear-gradient(90deg,#0d3026,#0b1c20);border-color:#1c654b;color:var(--green)}
+.sidefoot{font-size:10px;color:#527071;margin-top:25px}
+.main{padding:25px;min-width:0;max-width:1600px;width:100%;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}
+.eyebrow{color:var(--cyan);font-size:10px;letter-spacing:3px}
+.top h1{margin:3px 0;font-size:23px}
+.admin{border:1px solid var(--line);background:#0a171a;padding:9px 13px;border-radius:8px;color:#b5d7d0;font-size:12px}
+.hero{position:relative;overflow:hidden;border:1px solid #1a5a49;border-radius:16px;padding:25px;background:linear-gradient(110deg,#0b211c,#09151b 60%,#10242b);display:flex;justify-content:space-between;align-items:center;min-height:190px}
+.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(transparent 96%,#2cff9a18 97%),linear-gradient(90deg,transparent 96%,#2cff9a18 97%);background-size:28px 28px;opacity:.25;pointer-events:none}
+.hero h2{font-size:clamp(23px,4vw,36px);margin:8px 0}
+.hero p{color:#9cbab5;max-width:520px}
+.globe{width:150px;height:150px;border-radius:50%;border:1px solid #38ffad88;box-shadow:0 0 30px #00ff9a22,inset 0 0 30px #00ff9a22;position:relative;background:repeating-linear-gradient(0deg,transparent 0 15px,#35ff9a38 16px 17px),repeating-linear-gradient(90deg,transparent 0 15px,#35ff9a38 16px 17px);animation:spin 16s linear infinite;flex:none;margin:0 35px}
+.globe:before,.globe:after{content:"";position:absolute;inset:10px 34px;border:1px solid #35ff9a88;border-radius:50%}
+.globe:after{inset:0 54px;border-color:#36d9ff88}
+@keyframes spin{to{transform:rotate(360deg)}}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:17px 0}
+.metric,.panel{background:linear-gradient(145deg,#0b191c,#081114);border:1px solid var(--line);border-radius:12px;box-shadow:0 0 30px #00ff9a12}
+.metric{padding:16px;position:relative;overflow:hidden}
+.metric span{color:var(--muted);font-size:11px}
+.metric strong{display:block;font-size:25px;color:var(--green);margin-top:5px}
+.metric small{color:#668c88}
+.columns{display:grid;grid-template-columns:1.3fr 1fr;gap:15px}
+.panel{padding:18px;margin-bottom:15px;min-width:0}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.panel h3{margin:0;font-size:14px;letter-spacing:1px}
+.tag{font-size:10px;color:var(--green);border:1px solid #23694d;padding:4px 8px;border-radius:30px}
+.radar{width:120px;height:120px;margin:8px auto;border-radius:50%;border:1px solid #24775a;background:repeating-radial-gradient(circle,transparent 0 18px,#1c654b 19px 20px),linear-gradient(90deg,transparent 49.5%,#1c654b 50%,transparent 50.5%),linear-gradient(transparent 49.5%,#1c654b 50%,transparent 50.5%);position:relative;overflow:hidden}
+.radar:after{content:"";position:absolute;inset:0;background:conic-gradient(from 0deg,transparent 0 75%,#35ff9a55 100%);animation:spin 3s linear infinite;border-radius:50%}
+.terminal{font:11px/1.9 Consolas,monospace;color:#70e6ac;background:#020807;border:1px solid #174b37;padding:12px;border-radius:8px;min-height:118px}
+.terminal b{color:var(--cyan)}
+.section{display:none}
+.section.active{display:block}
+.btn{border:1px solid #287a59;background:#0c2a20;color:var(--green);padding:9px 13px;border-radius:7px}
+.btn:hover{background:#12412e}
+.btn.secondary{border-color:#28505a;background:#0b2025;color:#b6e7ed}
+.btn.danger{border-color:#743247;background:#2a101a;color:#ff8ba5}
+.field{display:flex;flex-direction:column;gap:5px;margin:9px 0}
+.field label{font-size:11px;color:#8eafaa}
+.field input,.field select,.field textarea{background:#050d10;color:var(--text);border:1px solid #234148;border-radius:7px;padding:10px;width:100%}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+.tablewrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:580px}
+th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #173036;font-size:12px}
+th{color:#6f9995;font-size:10px;letter-spacing:1px}
+td{color:#c8e1db}
+.empty{text-align:center;color:#71918d;padding:25px}
+.pill{display:inline-block;padding:3px 8px;border-radius:30px;font-size:10px;background:#132b22;color:var(--green)}
+.pill.pending{background:#302710;color:#ffd36b}
+.pill.rejected{background:#32151e;color:#ff829b}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.actions button{font-size:10px;padding:6px 8px}
+.muted{color:var(--muted);font-size:11px}
+.notice{border:1px solid #685329;background:#211c0e;color:#f5d78a;padding:12px;border-radius:8px;font-size:11px;margin-bottom:15px}
+.login{max-width:380px;margin:12vh auto;background:#091719;border:1px solid #1b5b47;border-radius:15px;padding:28px;box-shadow:0 0 60px #00ff9a12}
+.login h1{color:var(--green);letter-spacing:2px}
+.toast{position:fixed;bottom:20px;right:20px;background:#0b2c21;border:1px solid #35ff9a;color:#dffff0;padding:12px 16px;border-radius:8px;z-index:10;display:none}
+.footer{text-align:center;color:#456966;font-size:10px;padding:15px}
+@media(max-width:900px){.app{grid-template-columns:1fr}.side{height:auto;position:relative}.nav{display:grid;grid-template-columns:repeat(2,1fr)}.sidefoot{display:none}.columns{grid-template-columns:1fr}}
+@media(max-width:600px){.main{padding:14px}.metrics{grid-template-columns:repeat(2,1fr)}.hero{padding:18px}.globe{width:85px;height:85px;margin:0}.formgrid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login">
+  <div class="eyebrow">SECURE ACCESS // LOCAL DEMO</div>
+  <h1>NEXUS CONTROL</h1>
+  <p class="muted">Super Admin Sign-in</p>
+  <div class="field">
+    <label>Admin Password</label>
+    <input id="loginPassword" type="password" placeholder="Demo password">
+  </div>
+  <button class="btn" style="width:100%" onclick="login()">UNLOCK CONTROL PANEL</button>
+  <p class="muted">Demo Password: <b>nexus123</b></p>
+</div>
+
+<div id="app" class="app hidden">
+<aside class="side">
+  <div class="brand">NEXUS // X<small>CYBER CONTROL CENTER</small></div>
+  <div class="status">● SYSTEM ONLINE <span style="float:right">DEMO</span></div>
+  <div class="nav-label">MAIN SYSTEM</div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">⌂ Dashboard</button>
+    <button data-page="products">▣ Products</button>
+    <button data-page="orders">▤ Orders / Customers</button>
+    <button data-page="payments">◈ Payment Review</button>
+    <button data-page="methods">＄ Payment Methods</button>
+    <button data-page="editor">⌘ Website Editor</button>
+    <button data-page="analytics">◉ Analytics</button>
+  </nav>
+  <div class="nav-label">ACCESS</div>
+  <nav class="nav"><button onclick="logout()">⇥ Lock Panel</button></nav>
+  <div class="sidefoot">NEXUS CONTROL CENTER v1.0<br>FRONT-END PROTOTYPE</div>
+</aside>
+
+<main class="main">
+<header class="top">
+  <div>
+    <div class="eyebrow">NEXUS NETWORK / ADMIN TERMINAL</div>
+    <h1 id="pageTitle">Command Dashboard</h1>
+  </div>
+  <div class="admin">◉ SUPER ADMIN &nbsp; <span style="color:var(--green)">●</span> LOCAL</div>
+</header>
+
+<section id="dashboard" class="section active">
+  <div class="hero">
+    <div>
+      <div class="eyebrow">WELCOME BACK // COMMANDER</div>
+      <h2>CONTROL THE <span style="color:var(--green)">SYSTEM.</span></h2>
+      <p>Manage your digital products, review submitted payments and monitor your store from one command center.</p>
+      <span class="tag">ALL SYSTEMS NOMINAL</span>
+    </div>
+    <div class="globe"></div>
+  </div>
+  <div class="metrics">
+    <div class="metric"><span>TOTAL REVENUE</span><strong id="totalRevenue">Rs 0</strong><small>Approved payments</small></div>
+    <div class="metric"><span>TODAY'S REVENUE</span><strong id="todayRevenue">Rs 0</strong><small>Demo records</small></div>
+    <div class="metric"><span>TOTAL ORDERS</span><strong id="orderCount">0</strong><small>All orders</small></div>
+    <div class="metric"><span>PENDING PAYMENTS</span><strong id="pendingCount">0</strong><small>Manual review</small></div>
+    <div class="metric"><span>ACTIVE PRODUCTS</span><strong id="productCount">0</strong><small>Catalogue</small></div>
+    <div class="metric"><span>VISITOR COUNTER</span><strong id="visitorCount">0</strong><small>This browser only</small></div>
+  </div>
+  <div class="columns">
+    <div class="panel">
+      <div class="panel-head"><h3>LIVE SYSTEM MONITOR</h3><span class="tag">SIMULATION</span></div>
+      <div class="terminal">
+        <div><b>[BOOT]</b> NEXUS interface initialized</div>
+        <div><b>[AUTH]</b> Local demo session active</div>
+        <div><b>[STORE]</b> Product catalogue loaded</div>
+        <div><b>[PAY]</b> Manual payment review enabled</div>
+        <div><b>[INFO]</b> Real backend not connected</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>NETWORK RADAR</h3><span class="tag">VISUAL FX</span></div>
+      <div class="radar"></div>
+      <p class="muted" style="text-align:center">Decorative radar animation.</p>
+    </div>
+  </div>
+</section>
+
+<section id="products" class="section">
+  <div class="panel">
+    <div class="panel-head"><h3>PRODUCT MANAGER</h3><span class="tag">ADD / EDIT / DELETE</span></div>
+    <form id="productForm">
+      <input type="hidden" id="productId">
+      <div class="formgrid">
+        <div class="field"><label>Product Name</label><input id="pName" required></div>
+        <div class="field"><label>Product Type</label><select id="pType"><option value="Paid">Paid</option><option value="Free">Free</option></select></div>
+        <div class="field"><label>Price (PKR)</label><input id="pPrice" type="number" min="0" value="0"></div>
+        <div class="field"><label>Download URL</label><input id="pLink" type="url" placeholder="https://..."></div>
+        <div class="field" style="grid-column:1/-1"><label>Description</label><textarea id="pDesc" rows="2"></textarea></div>
+      </div>
+      <button class="btn" type="submit">SAVE PRODUCT</button>
+      <button class="btn secondary" type="button" onclick="resetProduct()">CLEAR</button>
+    </form>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h3>PRODUCT CATALOGUE</h3><span class="muted" id="productTotal"></span></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>PRODUCT</th><th>TYPE</th><th>PRICE</th><th>DOWNLOAD</th><th>ACTIONS</th></tr></thead>
+        <tbody id="productRows"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="orders" class="section">
+  <div class="panel">
+    <div class="panel-head"><h3>ORDERS & CUSTOMERS</h3><span class="tag">LOCAL DEMO</span></div>
+    <form id="orderForm">
+      <div class="formgrid">
+        <div class="field"><label>Customer Name</label><input id="oCustomer" required></div>
+        <div class="field"><label>Email / Contact</label><input id="oContact" required></div>
+        <div class="field"><label>Product</label><select id="oProduct"></select></div>
+        <div class="field"><label>Amount (PKR)</label><input id="oAmount" type="number" min="0" required></div>
+      </div>
+      <button class="btn">ADD DEMO ORDER</button>
+    </form>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h3>ORDER HISTORY</h3></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>ORDER</th><th>CUSTOMER</th><th>PRODUCT</th><th>AMOUNT</th><th>STATUS</th><th>DATE</th></tr></thead>
+        <tbody id="orderRows"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="payments" class="section">
+  <div class="notice">اہم: اصل رقم اپنے JazzCash، Easypaisa یا بینک اکاؤنٹ میں چیک کیے بغیر آرڈر منظور نہ کریں۔ Screenshot اکیلا ادائیگی کا ثبوت نہیں۔</div>
+  <div class="panel">
+    <div class="panel-head"><h3>PAYMENT SUBMISSION</h3><span class="tag">MANUAL REVIEW</span></div>
+    <form id="paymentForm">
+      <div class="formgrid">
+        <div class="field"><label>Customer Name</label><input id="payCustomer" required></div>
+        <div class="field"><label>Contact / Email</label><input id="payContact" required></div>
+        <div class="field"><label>Product</label><select id="payProduct"></select></div>
+        <div class="field"><label>Amount (PKR)</label><input id="payAmount" type="number" min="0" required></div>
+        <div class="field"><label>Payment Method</label>
+          <select id="payMethod">
+            <option>JazzCash</option><option>Easypaisa</option><option>Raast</option><option>Bank Transfer</option><option>UPI</option>
+          </select>
+        </div>
+        <div class="field"><label>Transaction ID</label><input id="payTxn" required></div>
+        <div class="field" style="grid-column:1/-1"><label>Payment Proof Image URL (Demo)</label><input id="payProof" type="url" placeholder="https://..."></div>
+      </div>
+      <button class="btn">SUBMIT FOR REVIEW</button>
+    </form>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h3>PAYMENT VERIFICATION QUEUE</h3></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>CUSTOMER</th><th>METHOD / TXN</th><th>AMOUNT</th><th>PROOF</th><th>STATUS</th><th>REVIEW</th></tr></thead>
+        <tbody id="paymentRows"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="methods" class="section">
+  <div class="notice">یہ تفصیلات صرف اسی براؤزر میں محفوظ ہوں گی۔ PIN، OTP یا بینک پاس ورڈ یہاں کبھی نہ لکھیں۔</div>
+  <div class="panel">
+    <div class="panel-head"><h3>PAYMENT RECEIVING DETAILS</h3><span class="tag">LOCAL SETTINGS</span></div>
+    <form id="methodsForm">
+      <div class="formgrid">
+        <div class="field"><label>JazzCash Number / Account Title</label><input id="mJazz"></div>
+        <div class="field"><label>Easypaisa Number / Account Title</label><input id="mEasy"></div>
+        <div class="field"><label>Raast ID</label><input id="mRaast"></div>
+        <div class="field"><label>Bank Name / Account Title</label><input id="mBank"></div>
+        <div class="field"><label>Bank IBAN</label><input id="mIban"></div>
+        <div class="field"><label>UPI ID</label><input id="mUpi"></div>
+      </div>
+      <button class="btn">SAVE PAYMENT DETAILS</button>
+    </form>
+  </div>
+</section>
+
+<section id="editor" class="section">
+  <div class="notice">یہ ایڈیٹر صرف اس ڈیمو میں مواد بدلتا ہے۔ یہ GitHub پر live فائل خود publish نہیں کرتا۔</div>
+  <div class="panel">
+    <div class="panel-head"><h3>WEBSITE CONTENT EDITOR</h3><span class="tag">LOCAL PREVIEW</span></div>
+    <div class="field"><label>Website Headline</label><input id="siteHeadline" value="WELCOME TO NEXUS STORE"></div>
+    <div class="field"><label>Announcement / Description</label><textarea id="siteAnnouncement" rows="4">Explore digital products, tools and resources.</textarea></div>
+    <div class="field"><label>Custom HTML Snippet (Preview Only)</label><textarea id="siteHtml" rows="5"></textarea></div>
+    <button class="btn" onclick="saveWebsite()">SAVE CONTENT</button>
+    <button class="btn secondary" onclick="previewWebsite()">PREVIEW</button>
+    <div class="panel" style="margin-top:15px">
+      <h3 id="previewHeadline">WELCOME TO NEXUS STORE</h3>
+      <p id="previewAnnouncement" class="muted">Explore digital products, tools and resources.</p>
+      <div id="htmlPreview"></div>
+    </div>
+  </div>
+</section>
+
+<section id="analytics" class="section">
+  <div class="metrics">
+    <div class="metric"><span>APPROVED SALES</span><strong id="aRevenue">Rs 0</strong></div>
+    <div class="metric"><span>ALL ORDERS</span><strong id="aOrders">0</strong></div>
+    <div class="metric"><span>APPROVED PAYMENTS</span><strong id="aApproved">0</strong></div>
+    <div class="metric"><span>PENDING PAYMENTS</span><strong id="aPending">0</strong></div>
+    <div class="metric"><span>PRODUCTS</span><strong id="aProducts">0</strong></div>
+    <div class="metric"><span>THIS DEVICE VISITS</span><strong id="aVisitors">0</strong></div>
+  </div>
+  <div class="panel">
+    <h3>ANALYTICS LIMITATIONS</h3>
+    <p class="muted">Visitor counter اسی browser میں محفوظ ہوتا ہے۔ مختلف صارفین کے حقیقی visitors، product views، popular products اور مشترکہ sales analytics کے لیے database اور server-side tracking درکار ہے۔</p>
+  </div>
+</section>
+
+<div class="footer">NEXUS CONTROL CENTER • SINGLE-FILE FRONT-END DEMO • NO LIVE BACKEND</div>
+</main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const KEY='nexus_control_v1';
+
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||{
+ products:[],orders:[],payments:[],methods:{},site:{},visits:0
+};
+
+function save(){
+ localStorage.setItem(KEY,JSON.stringify(db));
+ render();
+}
+
+function money(n){
+ return 'Rs '+Number(n||0).toLocaleString('en-PK');
+}
+
+function esc(s){
+ return String(s??'').replace(/[&<>"']/g,c=>({
+ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+ }[c]));
+}
+
+function toast(msg){
+ $('toast').textContent=msg;
+ $('toast').style.display='block';
+ setTimeout(()=>$('toast').style.display='none',2600);
+}
+
+function login(){
+ if($('loginPassword').value==='nexus123'){
+  $('loginScreen').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  db.visits=(db.visits||0)+1;
+  save();
+ }else{
+  toast('Incorrect demo password');
+ }
+}
+
+function logout(){
+ $('app').classList.add('hidden');
+ $('loginScreen').classList.remove('hidden');
+ $('loginPassword').value='';
+}
+
+$('loginPassword').addEventListener('keydown',e=>{
+ if(e.key==='Enter')login();
+});
+
+document.querySelectorAll('[data-page]').forEach(b=>{
+ b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-page]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+
+  document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+  $(b.dataset.page).classList.add('active');
+
+  $('pageTitle').textContent=b.textContent.trim();
+ });
+});
+
+function resetProduct(){
+ $('productForm').reset();
+ $('productId').value='';
+ $('pPrice').value=0;
+}
+
+$('productForm').addEventListener('submit',e=>{
+ e.preventDefault();
+
+ const id=$('productId').value;
+
+ const p={
+  id:id||crypto.randomUUID(),
+  name:$('pName').value.trim(),
+  type:$('pType').value,
+  price:$('pType').value==='Free'?0:Number($('pPrice').value||0),
+  link:$('pLink').value.trim(),
+  desc:$('pDesc').value.trim()
+ };
+
+ if(id){
+  db.products=db.products.map(x=>x.id===id?p:x);
+ }else{
+  db.products.push(p);
+ }
+
+ save();
+ resetProduct();
+ toast('Product saved');
+});
+
+function editProduct(id){
+ const p=db.products.find(x=>x.id===id);
+ if(!p)return;
+
+ $('productId').value=p.id;
+ $('pName').value=p.name;
+ $('pType').value=p.type;
+ $('pPrice').value=p.price;
+ $('pLink').value=p.link;
+ $('pDesc').value=p.desc;
+
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function deleteProduct(id){
+ if(confirm('Delete this product?')){
+  db.products=db.products.filter(x=>x.id!==id);
+  save();
+  toast('Product deleted');
+ }
+}
+
+function productOptions(){
+ const opts=db.products.map(p=>
+  `<option value="${esc(p.id)}">${esc(p.name)} — ${money(p.price)}</option>`
+ ).join('');
+
+ $('oProduct').innerHTML=opts||'<option value="">Add products first</option>';
+ $('payProduct').innerHTML=opts||'<option value="">Add products first</option>';
+}
+
+$('orderForm').addEventListener('submit',e=>{
+ e.preventDefault();
+
+ const p=db.products.find(x=>x.id===$('oProduct').value);
+
+ db.orders.unshift({
+  id:'NX-'+Date.now().toString().slice(-7),
+  customer:$('oCustomer').value,
+  contact:$('oContact').value,
+  product:p?.name||'Manual order',
+  amount:Number($('oAmount').value),
+  status:'Pending',
+  date:new Date().toISOString()
+ });
+
+ save();
+ e.target.reset();
+ toast('Demo order added');
+});
+
+$('paymentForm').addEventListener('submit',e=>{
+ e.preventDefault();
+
+ const p=db.products.find(x=>x.id===$('payProduct').value);
+
+ db.payments.unshift({
+  id:crypto.randomUUID(),
+  customer:$('payCustomer').value,
+  contact:$('payContact').value,
+  product:p?.name||'Unknown',
+  amount:Number($('payAmount').value),
+  method:$('payMethod').value,
+  txn:$('payTxn').value,
+  proof:$('payProof').value,
+  status:'Pending',
+  date:new Date().toISOString()
+ });
+
+ save();
+ e.target.reset();
+ toast('Payment submitted for demo review');
+});
+
+function reviewPayment(id,status){
+ const p=db.payments.find(x=>x.id===id);
+ if(!p)return;
+
+ if(status==='Approved'&&!confirm(
+  'Have you independently verified the money arrived in your wallet/bank? Approve this demo payment?'
+ ))return;
+
+ p.status=status;
+
+ if(status==='Approved'){
+  db.orders.unshift({
+   id:'NX-'+Date.now().toString().slice(-7),
+   customer:p.customer,
+   contact:p.contact,
+   product:p.product,
+   amount:p.amount,
+   status:'Approved',
+   date:new Date().toISOString()
+  });
+ }
+
+ save();
+ toast('Payment marked '+status);
+}
+
+$('methodsForm').addEventListener('submit',e=>{
+ e.preventDefault();
+
+ db.methods={
+  jazz:$('mJazz').value,
+  easy:$('mEasy').value,
+  raast:$('mRaast').value,
+  bank:$('mBank').value,
+  iban:$('mIban').value,
+  upi:$('mUpi').value
+ };
+
+ save();
+ toast('Payment details saved locally');
+});
+
+function saveWebsite(){
+ db.site={
+  headline:$('siteHeadline').value,
+  announcement:$('siteAnnouncement').value,
+  html:$('siteHtml').value
+ };
+
+ save();
+ previewWebsite();
+ toast('Website content saved locally');
+}
+
+function previewWebsite(){
+ $('previewHeadline').textContent=$('siteHeadline').value;
+ $('previewAnnouncement').textContent=$('siteAnnouncement').value;
+
+ // Custom HTML is shown as text, not executed.
+ $('htmlPreview').textContent=$('siteHtml').value;
+}
+
+function render(){
+
+ $('productRows').innerHTML=db.products.map(p=>`
+ <tr>
+  <td><b>${esc(p.name)}</b><br><span class="muted">${esc(p.desc)}</span></td>
+  <td>${p.type}</td>
+  <td>${money(p.price)}</td>
+  <td>${p.link?`<a href="${esc(p.link)}" target="_blank" rel="noopener">Open link</a>`:'—'}</td>
+  <td>
+   <div class="actions">
+    <button class="btn secondary" onclick="editProduct('${p.id}')">Edit</button>
+    <button class="btn danger" onclick="deleteProduct('${p.id}')">Delete</button>
+   </div>
+  </td>
+ </tr>
+ `).join('')||'<tr><td colspan="5" class="empty">No products yet.</td></tr>';
+
+ $('productTotal').textContent=db.products.length+' items';
+
+ $('orderRows').innerHTML=db.orders.map(o=>`
+ <tr>
+  <td>${esc(o.id)}</td>
+  <td>${esc(o.customer)}<br><span class="muted">${esc(o.contact)}</span></td>
+  <td>${esc(o.product)}</td>
+  <td>${money(o.amount)}</td>
+  <td><span class="pill ${o.status==='Pending'?'pending':''}">${esc(o.status)}</span></td>
+  <td>${new Date(o.date).toLocaleDateString()}</td>
+ </tr>
+ `).join('')||'<tr><td colspan="6" class="empty">No orders recorded.</td></tr>';
+
+ $('paymentRows').innerHTML=db.payments.map(p=>`
+ <tr>
+  <td>${esc(p.customer)}<br><span class="muted">${esc(p.contact)}</span></td>
+  <td>${esc(p.method)}<br><span class="muted">${esc(p.txn)}</span></td>
+  <td>${money(p.amount)}</td>
+  <td>${p.proof?`<a href="${esc(p.proof)}" target="_blank" rel="noopener">View proof</a>`:'Not provided'}</td>
+  <td><span class="pill ${p.status==='Pending'?'pending':p.status==='Rejected'?'rejected':''}">${esc(p.status)}</span></td>
+  <td>
+   ${p.status==='Pending'?`
+    <div class="actions">
+     <button class="btn" onclick="reviewPayment('${p.id}','Approved')">Approve</button>
+     <button class="btn danger" onclick="reviewPayment('${p.id}','Rejected')">Reject</button>
+    </div>
+   `:'—'}
+  </td>
+ </tr>
+ `).join('')||'<tr><td colspan="6" class="empty">No payment submissions.</td></tr>';
+
+ productOptions();
+
+ const approved=db.payments.filter(p=>p.status==='Approved');
+ const revenue=approved.reduce((s,p)=>s+p.amount,0);
+ const today=new Date().toDateString();
+
+ const todayRevenue=approved
+  .filter(p=>new Date(p.date).toDateString()===today)
+  .reduce((s,p)=>s+p.amount,0);
+
+ $('totalRevenue').textContent=money(revenue);
+ $('todayRevenue').textContent=money(todayRevenue);
+ $('orderCount').textContent=db.orders.length;
+ $('pendingCount').textContent=db.payments.filter(p=>p.status==='Pending').length;
+ $('productCount').textContent=db.products.length;
+ $('visitorCount').textContent=db.visits||0;
+
+ $('aRevenue').textContent=money(revenue);
+ $('aOrders').textContent=db.orders.length;
+ $('aApproved').textContent=approved.length;
+ $('aPending').textContent=db.payments.filter(p=>p.status==='Pending').length;
+ $('aProducts').textContent=db.products.length;
+ $('aVisitors').textContent=db.visits||0;
+}
+
+function loadSettings(){
+ const m=db.methods||{};
+
+ [['mJazz','jazz'],['mEasy','easy'],['mRaast','raast'],
+  ['mBank','bank'],['mIban','iban'],['mUpi','upi']
+ ].forEach(([id,k])=>$(id).value=m[k]||'');
+
+ const s=db.site||{};
+
+ $('siteHeadline').value=s.headline||'WELCOME TO NEXUS STORE';
+ $('siteAnnouncement').value=s.announcement||'Explore digital products, tools and resources.';
+ $('siteHtml').value=s.html||'';
+
+ previewWebsite();
+}
+
+loadSettings();
+render();
+</script>
+</body>
+</html>
